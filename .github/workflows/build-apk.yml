@@ -32,15 +32,12 @@ jobs:
           
       # 4. تثبيت تبعيات Node.js (مثل Capacitor)
       - name: Install Node Dependencies
-        run: |
-          npm install
-          # تثبيت الحزم الرئيسية لـ Capacitor إذا لم تكن موجودة بالفعل
-          npm install @capacitor/core @capacitor/cli @capacitor/android
+        run: npm install # هذا الأمر سيثبت كل التبعيات المذكورة في package.json، بما في ذلك CLI
           
       # 5. الخطوة الحاسمة: مزامنة Capacitor
       # هذه الخطوة تولد الملفات المفقودة (مثل cordova.variables.gradle) في مجلد android
       - name: Capacitor Sync (Generate Missing Config)
-        # يجب أن تعمل هذه الأوامر من جذر المشروع
+        # هذا الأمر هو الأفضل لإيجاد وتنفيذ cap، وقد يعمل بعد تبسيط خطوة npm install
         run: npx cap sync android
         
       # 6. بناء ملف APK (وضع Debug)
