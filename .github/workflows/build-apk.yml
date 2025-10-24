@@ -1,42 +1,64 @@
 name: Build Android APK
 
 on:
+  # سيتم تشغيل سير العمل عند عمل Push على فرع main
   push:
     branches: [ main ]
+  # يسمح بتشغيل سير العمل يدويًا من واجهة GitHub
   workflow_dispatch:
 
 jobs:
   build:
+    # تشغيل الوظيفة على أحدث نسخة من Ubuntu (جهاز افتراضي)
     runs-on: ubuntu-latest
     
     steps:
+      # 1. تحديث: سحب الكود من المستودع. تم تحديث الإصدار إلى v4 للحداثة
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       
+      # 2. تحديث: إعداد بيئة Node.js. تم تحديث الإصدار إلى v4
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
       
+      # 3. تحديث: إعداد بيئة Java JDK. تم تحديث الإصدار إلى v4
       - name: Setup Java JDK
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-      
-      - name: Install dependencies
+          
+      # 4. تثبيت تبعيات Node.js (مثل Capacitor)
+      - name: Install Node Dependencies
         run: |
           npm install
+          # تثبيت الحزم الرئيسية لـ Capacitor إذا لم تكن موجودة بالفعل
           npm install @capacitor/core @capacitor/cli @capacitor/android
-      
-      - name: Build APK
+          
+      # 5. الخطوة الحاسمة: مزامنة Capacitor
+      # هذه الخطوة تولد الملفات المفقودة (مثل cordova.variables.gradle) في مجلد android
+      - name: Capacitor Sync (Generate Missing Config)
+        # يجب أن تعمل هذه الأوامر من جذر المشروع
+        run: npx cap sync android
+        
+      # 6. بناء ملف APK (وضع Debug)
+      - name: Build Android Debug APK
         run: |
+          # الانتقال إلى مجلد Android
           cd android
+          # إعطاء صلاحية التنفيذ لملف Gradle
           chmod +x gradlew
+          # تشغيل أمر بناء نسخة Debug
           ./gradlew assembleDebug
-      
-      - name: Upload APK
+          
+      # 7. رفع ملف APK كـ Artifact
+      - name: Upload APK Artifact
+        # هذا هو الإصدار الذي قمنا بتحديثه لإصلاح الخطأ السابق
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
           path: android/app/build/outputs/apk/debug/app-debug.apk
+          # نحدد مدة الاحتفاظ بالملف (اختياري)
+          retention-days: 7 
