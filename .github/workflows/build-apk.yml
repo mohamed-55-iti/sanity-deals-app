@@ -33,10 +33,10 @@ jobs:
       - name: Capacitor Sync
         run: npx cap sync android
       
-      # فك تشفير ملف Keystore من Base64
+      # فك تشفير ملف Keystore من Base64 بطريقة آمنة
       - name: Decode Keystore
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/my-release-key.keystore
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/my-release-key.keystore
         
       # بناء ملف APK موقّع (Release)
       - name: Build Signed Release APK
